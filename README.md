@@ -1,6 +1,6 @@
 # write-human
 
-A single-file agent skill (with a zero-dependency audit script) for editing AI-sounding or overly compressed prose into clear, natural human writing while keeping every fact, number, citation, quote, and technical term intact.
+A single-file agent skill for editing AI-sounding or overly compressed prose into clear, natural human writing while keeping every fact, number, citation, quote, and technical term intact.
 
 ## Why another prose skill
 
@@ -9,14 +9,13 @@ Existing de-slop skills tend to fail in two opposite ways:
 - **Linter-style rule lists** (`cursor/unslop`) ban dashes, parentheses, mid-sentence colons, and literal engineering nouns (`vector`, `harness`, `surface`, `primitive`), and chop prose into uniform 9-word sentences. They often overwrite clean human text too.
 - **Word-and-staging lists** (`blader/humanizer`) catch rhetorical fluff well, yet omit the psycholinguistic compression habits identified in recent LLM readability research (stacked noun compounds, long dependency distances, dropped `that` disambiguators, and inanimate-subject animacy mismatches). Removing fluff without those guardrails can trigger a compression rebound.
 
-`write-human` puts the full editing procedure in one self-contained [SKILL.md](skills/write-human/SKILL.md) (~110 lines) paired with [prose_audit.py](skills/write-human/scripts/prose_audit.py), a Python stdlib script that verifies before/after edits identically across model families.
+`write-human` puts the full editing procedure in one self-contained [SKILL.md](skills/write-human/SKILL.md) (~105 lines).
 
 ## How it works
 
 1. **Restraint and precedence first.** Clean human sentences stay byte-identical; if a passage has fewer than two tells and no parsing friction, the skill returns it unchanged. Frozen spans (quotes, code, LaTeX, `\cite`/`\ref`, numbers, dates, units) and explicit user requests outrank every style rule.
 2. **Twelve positive reflexes (`W1–W12`).** Each rule gives a pattern to spot, a concrete replacement move, an explicit keep-if condition, and one fact-preserving Before/After pair. `W1–W3` target staging, gratuitous antithesis, and tidy uplift; `W4–W12` fix parsing friction, reference chains, evaluative style words, repeated templates, punctuation jobs, and cadence inside edited spans.
 3. **Register-aware without bloat.** Two primary registers (Technical/Academic and Personal/Essay/Narrative) plus a stackable Reply toggle preserve literal terms of art, calibrated hedges, methods passives, and author stance.
-4. **Deterministic before/after audit (`prose_audit.py --strict`).** Checks frozen tokens (numbers, citations, refs, math, code, URLs, identifiers), sums all antithesis forms together so form swaps surface in the diff, and flags compression rebound, uniform-length runs, and staging tripwires.
 
 ## Install and use
 
@@ -24,11 +23,7 @@ Existing de-slop skills tend to fail in two opposite ways:
 npx skills add https://github.com/gitRasheed/write-human-skill --skill write-human -g
 ```
 
-Add `-a claude-code`, `-a codex`, or `-a antigravity` for a single harness. Run it with `/write-human` or `$write-human`, or run the audit script directly:
-
-```bash
-python3 skills/write-human/scripts/prose_audit.py --before draft.md --after edited.md --strict
-```
+Add `-a claude-code`, `-a codex`, or `-a antigravity` for a single harness. Run it with `/write-human` or `$write-human`.
 
 ## Blind head-to-head benchmark
 
@@ -40,7 +35,7 @@ Evaluated blind against `blader/humanizer` (v4) and `cursor/unslop` on 6 indepen
 | `blader/humanizer` v4 | 4.53 | 4.79 | 4.40 | 4.51 | 4.31 | 4.51 | 18 / 75 (24.0%) | 5 | 3 / 3 |
 | `cursor/unslop` | 3.47 | 3.59 | 3.33 | 3.41 | 3.07 | 3.37 | 4 / 75 (5.3%) | 13 *(18 w/ control)* | 0 / 3 |
 
-Every judge and every generator family ranked `write-human` first overall, with a 15/15 sweep on the opinion essay (5.00 mean) and 0 hard fidelity failures across all 90 evaluations. Two unanimous cell losses in that run (a dropped month inside a cliché opener and a leftover sentence-initial `Notably,`) were patched directly into `W1` and `prose_audit.py`.
+Every judge and every generator family ranked `write-human` first overall, with a 15/15 sweep on the opinion essay (5.00 mean) and 0 hard fidelity failures across all 90 evaluations. Two unanimous cell losses in that run (a dropped month inside a cliché opener and a leftover sentence-initial `Notably,`) were patched directly into `W1`.
 
 ## Research basis
 
@@ -56,9 +51,3 @@ Every judge and every generator family ranked `write-human` first overall, with 
 - **Kobak et al. (*Science Advances* 2025, `arXiv:2406.07016`)** & **Juzek & Ward (COLING 2025, `arXiv:2412.11385`):** Excess LLM vocabulary in 15M PubMed abstracts is predominantly style verbs (66%) and evaluative adjectives (14%).
 - **Shaib, Elazar, Li & Wallace (EMNLP 2024, `arXiv:2407.00211`):** Memorized 4–8 token POS syntactic templates persist through alignment and survive vocabulary swaps.
 - **Gopen & Swan (*American Scientist* 1990)** & **Williams & Bizup (*Style: Lessons in Clarity and Grace*):** Given-before-New Topic Position and Stress Position cohesion.
-
-## Running tests
-
-```bash
-python3 -m unittest discover -s tests -v
-```

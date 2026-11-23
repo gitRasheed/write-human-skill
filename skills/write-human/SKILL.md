@@ -33,9 +33,9 @@ Readers parse word by word and hold little in working memory. Remove AI staging 
 
 ## Workflow
 
-1. **Diagnose spans.** Scan the whole draft (or run `python3 scripts/prose_audit.py --check <file>` for tripwire counts, then mark `W1–W12` hits yourself) at sentence and paragraph scale. Touch only spans with a real tell or misparse; keep clean sentences byte-identical.
+1. **Diagnose spans.** Scan the whole draft at sentence and paragraph scale and mark `W1–W12` hits. Touch only spans with a real tell or misparse; keep clean sentences byte-identical.
 2. **Apply reflexes.** Run the matching positive replacement for each marked span. Cut padding at clause boundaries; keep connective function words intact inside surviving clauses.
-3. **Verify with `prose_audit.py`.** When editing a file or multi-paragraph draft, run `python3 scripts/prose_audit.py --before <old> --after <new> --strict`. Counts are tripwires: each sends you back to judge the flagged sentence. `--strict` exits 2 on fidelity diffs or tripwires, so check the exit status and read the report. If you cannot run it, make the three checks by reading and never report output you did not get:
+3. **Verify before returning.** Run three checks on the edited text:
    - **Fidelity:** every number, date, unit, citation, ref, code span, quote, and proper name survives unchanged (except recaps explicitly cut under the Reply toggle).
    - **Antithesis and disavowals:** total antithesis count across all forms did not rise, and revision did not introduce postposed `X, not Y` or modesty disavowals.
    - **Compression rebound and cadence:** word count did not collapse by stripping glue words, no new 3+ noun stacks or dropped `that` clauses appeared, and edited paragraphs vary in sentence length.
@@ -101,5 +101,5 @@ Apply `W1–W3` across the draft. Apply `W4–W12` inside spans already being ed
 ## Output Modes
 
 - **Chat (pasted text):** Return the edited text. Add a brief 2–4 line audit note only if you flagged missing-fact questions, ambiguity, or cut recaps under Reply toggle.
-- **File mode:** Read the full file, edit prose in place while leaving code/YAML/LaTeX/links untouched, run `scripts/prose_audit.py --before ... --after ... --strict`, and report sections touched plus any audit flags.
+- **File mode:** Read the full file, edit prose in place while leaving code/YAML/LaTeX/links untouched, run the three verification checks, and report sections touched plus any audit flags.
 - **Embedded mode** (PR bodies, commit messages, inline replies): Return only the final text, with no audit notes or markers.
